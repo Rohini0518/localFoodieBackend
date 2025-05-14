@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const productRouter=require("./routes/product/productRoute")
 
 const app = express();
 app.use(express.json());
@@ -21,3 +22,5 @@ mongoose
 app.get("/", (req, res) => {
   res.send("backend is running ");
 });
+
+app.use("/products",productRouter)
