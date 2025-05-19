@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const productRouter=require("./routes/product/productRoute")
-
+const cartRouter=require("./routes/cart/cartRoute")
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 4000;
@@ -24,3 +24,4 @@ app.get("/", (req, res) => {
 });
 
 app.use("/products",productRouter)
+app.use("/cart",cartRouter)
