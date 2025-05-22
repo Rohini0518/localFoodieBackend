@@ -1,20 +1,37 @@
 const Cart = require("../../modules/cart/cartModule");
+const joi = require("joi");
 
-const createcartItem = async (req, res) => {
+const createCartItem = async (req, res) => {
   try {
-    const cart = new Cart({
-      productId: req.params.id,
-      quantity: req.body.quantity,
-    });
-    const savedItem = await cart.save();
-
-    const populatedItem = await savedItem.populate(
-      "productId",
-      "name price image "
-    );
-    res
-      .status(201)
-      .send({ message: "Item added to cart", item: populatedItem });
+    const { error:joierr } = joiItemValidator(req.body);
+    if (joierr) return res.status(400).send({message:"error in joi validation",error:joierr.details[0].message});
+    const { productId, quantity } = req.body;
+    const productExist =await Cart.findOne({ productId });
+    
+    if (!productExist) {
+      const cart =  new Cart({
+        productId,
+        quantity
+      })
+      const savedItem = await cart.save();
+      const populatedItem = await savedItem.populate(
+        "productId",
+        "name price image "
+      );
+      res
+        .status(201)
+        .send({ message: "Item added to cart", item: populatedItem });
+    } else {
+      productExist.quantity += 1;
+      const savedItem = await productExist.save();
+      const populatedItem = await savedItem.populate(
+        "productId",
+        "name price image "
+      );
+      res
+        .status(201)
+        .send({ message: "Item quantity added to cart", item: populatedItem });
+    }
   } catch (error) {
     console.error("Error adding to cart:", error);
     res.status(500).send("server error failed to add item to cart");
@@ -39,6 +56,8 @@ const getCartItems = async (req, res) => {
 
 const getItemById = async (req, res) => {
   try {
+    const {error:joierr}=joiIdValidator(req.params.id)
+    if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
     const cart = await Cart.findById(req.params.id).populate(
       "productId",
       "name price image label"
@@ -56,27 +75,44 @@ const getItemById = async (req, res) => {
 
 const updateItemById = async (req, res) => {
   try {
-    const cart = await Cart.findByIdAndUpdate(
-      req.params.id,
-      {
-        productId: req.body.productId,
-        quantity: req.body.quantity,
-      },
-      { new: true }
-    ).populate("productId", "name price image label");
+    const {error:joierr}=joiIdValidator(req.params.id)
+    if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
+    const { action } = req.body;
+    const cartItem = await Cart.findById(req.params.id);
+    if (!cartItem) return res.status(404).send("id is not valid");
 
-    if (!cart) return res.status(404).send("id not found");
+    if (action === "increase") {
+      cartItem.quantity += 1;
+    } else if (action === "decrease") {
+      cartItem.quantity -= 1;
+    }
+    else return res.status(400).send({ message: "Invalid action data" });
+    if (cartItem.quantity <1) {
+      const deleteItem = await Cart.findByIdAndDelete(req.params.id);
+      return res
+        .status(200)
+        .send({ message: "cart item deleted succcesfully", item: deleteItem });
+    }
+    const updatedItem = await cartItem.save();
+    console.log(updatedItem)
+    const populatedItem =await  updatedItem.populate(
+      "productId",
+      "name price image label"
+    );
     res
       .status(200)
-      .send({ message: "cart item updated succcesfully", item: cart });
+      .send({ message: `item ${action}d succesfully`, item: populatedItem });
   } catch (error) {
     res
       .status(500)
-      .send({ message: "failed to update cart item", error: error.message });
+      .send({ message: "cant fetch data from server", error: error.message });
   }
 };
+
 const deleteItemById = async (req, res) => {
   try {
+    const {error:joierr}=joiIdValidator(req.params.id)
+    if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
     const cart = await Cart.findByIdAndDelete(req.params.id).populate(
       "productId",
       "name price image label"
@@ -92,8 +128,26 @@ const deleteItemById = async (req, res) => {
   }
 };
 
+function joiIdValidator(id) {
+  const schema = joi
+    .string()
+    .required()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .error(() => new Error("Invalid MongoDb objectId format"));
+  return schema.validate(id);
+}
+
+function joiItemValidator(item) {
+  const schema = joi.object({
+    productId: joi.string().required(),
+    quantity: joi.number().integer().min(1).required(),
+  });
+    return schema.validate(item);
+
+}
+
 module.exports = {
-  createcartItem,
+  createCartItem,
   getItemById,
   getCartItems,
   updateItemById,

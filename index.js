@@ -1,11 +1,12 @@
 const express = require("express");
+const cors= require("cors")
 const mongoose = require("mongoose");
 const productRouter=require("./routes/product/productRoute")
 const cartRouter=require("./routes/cart/cartRoute")
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 4000;
-
+app.use(cors())
 app.listen(port, "localhost", () => {
   console.log(`server is running in ${port}`);
 });

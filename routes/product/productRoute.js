@@ -6,7 +6,7 @@ const productController=require("../../controllers/productsController/productCon
 router.get("/getAllProducts",productController.getAllProducts)
 router.get("/getProductById/:id",productController.getProductById)
 router.post("/createProduct",productController.createProduct)
-router.put("/updateProduct/:id",productController.updateProduct)
+router.put("/updateProduct/:id",productController.updateProductById)
 router.delete("/deleteProduct/:id",productController.deleteProduct)
 
 module.exports=router;

@@ -10,6 +10,7 @@ const cartSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1,
+    validate:{validator:Number.isInteger,message:"not a integer"}
   },
 });
 

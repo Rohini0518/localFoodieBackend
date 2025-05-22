@@ -1,9 +1,9 @@
 const productModel = require("../../modules/products/productModule");
 const joi = require("joi");
 const createProduct = async (req, res) => {
-  const { error } = joiValidator(req.body);
-  if (error) {
-    res
+  const { error:joierr } = joiProductValidator(req.body);
+  if (joierr) {
+   return res
       .status(400)
       .send({ message: "validation error", details: error.details[0].message });
   }
@@ -33,10 +33,9 @@ const getAllProducts = async (req, res) => {
 };
 
 const getProductById = async (req, res) => {
-  const { error } = joiIdValidator(req.params.id);
-  if (error) {
-    return res.status(400).send(error);
-  }
+  const { error:joierr } = joiIdValidator(req.params.id);
+  if (joierr) return res.status(400).send(joierr);
+ 
   try {
     const product = await productModel.findById(req.params.id);
     if (!product) {
@@ -50,11 +49,9 @@ const getProductById = async (req, res) => {
   }
 };
 
-const updateProduct = async (req, res) => {
-  const { error: idError } = joiIdValidator(req.params.id);
-  if (idError) {
-    return res.status(400).send("invalid ID");
-  }
+const updateProductById = async (req, res) => {
+   const { error:joierr } = joiIdValidator(req.params.id);
+  if (joierr) return res.status(400).send(joierr);
   const { err: bodyError } = joiValidator(req.body);
   if (bodyError) {
     return res
@@ -87,10 +84,8 @@ const updateProduct = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-  const { error: idError } = joiIdValidator(req.params.id);
-  if (idError) {
-    return res.status(400).send("id format is invalid");
-  }
+   const { error:joierr } = joiIdValidator(req.params.id);
+  if (joierr) return res.status(400).send(joierr);
   try {
     const delProduct = await productModel.findByIdAndRemove(req.params.id);
     if (!delProduct) {
@@ -104,7 +99,7 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-function joiValidator(product) {
+function joiProductValidator(product) {
   const schema = joi.object({
     name: joi.string().min(3).required(),
     price: joi.number().required(),
@@ -117,10 +112,11 @@ function joiValidator(product) {
 function joiIdValidator(id) {
   const schema = joi
     .string()
+    .length(24)
+    .hex()
     .required()
-    .pattern(/^[0-9a-fA-F]{24}$/)
     .error(() => new Error("Invalid MongoDb objectId format"));
   return schema.validate(id);
 }
 
-module.exports={createProduct,getAllProducts,getProductById,updateProduct,deleteProduct}
+module.exports={createProduct,getAllProducts,getProductById,updateProductById,deleteProduct}
