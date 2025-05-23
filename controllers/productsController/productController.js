@@ -52,7 +52,7 @@ const getProductById = async (req, res) => {
 const updateProductById = async (req, res) => {
    const { error:joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
-  const { err: bodyError } = joiValidator(req.body);
+  const { err: bodyError } = joiProductValidator(req.body);
   if (bodyError) {
     return res
       .status(400)
