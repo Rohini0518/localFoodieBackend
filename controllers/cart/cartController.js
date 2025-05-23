@@ -75,8 +75,8 @@ const getItemById = async (req, res) => {
 
 const updateItemById = async (req, res) => {
   try {
-    const {error:joierr}=joiIdValidator(req.params.id)
-    if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
+    // const {error:joierr}=joiIdValidator(req.params.id)
+    // if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
     const { action } = req.body;
     const cartItem = await Cart.findById(req.params.id);
     if (!cartItem) return res.status(404).send("id is not valid");
@@ -84,15 +84,15 @@ const updateItemById = async (req, res) => {
     if (action === "increase") {
       cartItem.quantity += 1;
     } else if (action === "decrease") {
-      cartItem.quantity -= 1;
-    }
-    else return res.status(400).send({ message: "Invalid action data" });
-    if (cartItem.quantity <1) {
+      cartItem.quantity -= 1;    
+     if (cartItem.quantity <1) {
       const deleteItem = await Cart.findByIdAndDelete(req.params.id);
       return res
         .status(200)
-        .send({ message: "cart item deleted succcesfully", item: deleteItem });
+        .send({ message: "cart item deleted succcesfully", item: deleteItem });}
     }
+    else return res.status(400).send({ message: "Invalid action data" });
+    
     const updatedItem = await cartItem.save();
     console.log(updatedItem)
     const populatedItem =await  updatedItem.populate(
@@ -140,7 +140,7 @@ function joiIdValidator(id) {
 function joiItemValidator(item) {
   const schema = joi.object({
     productId: joi.string().required(),
-    quantity: joi.number().integer().min(1).required(),
+    quantity: joi.number().integer().required(),
   });
     return schema.validate(item);
 
