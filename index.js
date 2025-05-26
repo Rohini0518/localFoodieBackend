@@ -3,6 +3,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const productRouter = require("./routes/product/productRoute");
 const cartRouter = require("./routes/cart/cartRoute");
+require("dotenv").config();
+
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 4000;
@@ -15,9 +17,7 @@ app.listen(port, "localhost", () => {
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://rohinipolina489:Rohini123@cluster0.f6v9ty4.mongodb.net/localFoodies?retryWrites=true&w=majority&appName=Cluster0"
-  )
+  .connect(process.env.MONGODB_URL)
   .then(() => {
     console.log("mongodb atlas is connected");
   })
