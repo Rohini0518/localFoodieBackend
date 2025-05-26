@@ -12,9 +12,9 @@ app.use(cors({
   origin: 'https://localfoodies.netlify.app', 
   credentials: true
 }));
-app.listen(port, "localhost", () => {
-  console.log(`server is running in ${port}`);
-});
+// app.listen(port, "localhost", () => {
+//   console.log(`server is running in ${port}`);
+// });
 
 mongoose
   .connect(process.env.MONGODB_URL)
