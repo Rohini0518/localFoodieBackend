@@ -12,9 +12,6 @@ app.use(cors({
   origin: 'https://localfoodies.netlify.app', 
   credentials: true
 }));
-app.listen(port, () => {
-  console.log(`server is running in ${port}`);
-});
 
 mongoose
   .connect(process.env.MONGODB_URL)
@@ -31,3 +28,5 @@ app.get("/", (req, res) => {
 
 app.use("/products", productRouter);
 app.use("/cart", cartRouter);
+
+module.exports = app;
