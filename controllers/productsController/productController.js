@@ -5,7 +5,10 @@ const createProduct = async (req, res) => {
   if (joierr) {
     return res
       .status(400)
-      .send({ message: "validation error", details: error.details[0].message });
+      .send({
+        message: "validation error",
+        details: joierr.details[0].message,
+      });
   }
   try {
     let product = new productModel({
@@ -52,8 +55,14 @@ const getProductById = async (req, res) => {
 
 const updateProductById = async (req, res) => {
   const { error: joierr } = joiIdValidator(req.params.id);
-  if (joierr) return res.status(400).send(joierr);
-  const { err: bodyError } = joiProductValidator(req.body);
+  if (joierr)
+    return res
+      .status(400)
+      .send({
+        message: "Validation error",
+        details: joiErr.details[0].message,
+      });
+  const { error: bodyError } = joiProductValidator(req.body);
   if (bodyError) {
     return res.status(400).send({
       message: "Validation error",
@@ -86,8 +95,6 @@ const updateProductById = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const { error: joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
-
-
   try {
     const delProduct = await productModel.findByIdAndRemove(req.params.id);
     if (!delProduct) {
@@ -97,7 +104,9 @@ const deleteProduct = async (req, res) => {
       .status(200)
       .send({ message: "product deleted succesfully", details: delProduct });
   } catch (error) {
-    return res.status(500).send("product not found server error");
+    return res
+      .status(500)
+      .json({ message: "Server error during deletion ", error: error.message });
   }
 };
 
@@ -107,6 +116,7 @@ function joiProductValidator(product) {
     price: joi.number().required(),
     image: joi.string().required(),
     label: joi.string().required(),
+    healthy: joi.boolean().optional(),
   });
   return schema.validate(product);
 }
