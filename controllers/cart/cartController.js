@@ -75,26 +75,26 @@ const getItemById = async (req, res) => {
 
 const updateItemById = async (req, res) => {
   try {
-    // const {error:joierr}=joiIdValidator(req.params.id)
-    // if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})
+    const {error:joierr}=joiIdValidator(req.params.id)
+    if(joierr) return res.status(400).send({message:"id is not valid",error:joierr.details[0].message})  
     const { action } = req.body;
+    if (action!="increase" || action!="decrease") return res.status(404).send("action is not valid");
     const cartItem = await Cart.findById(req.params.id);
     if (!cartItem) return res.status(404).send("id is not valid");
-
+    if (cartItem.quantity ===1 && action === "decrease") {
+      await Cart.findByIdAndDelete(req.params.id);
+       return res
+        .status(200)
+        .send({ message: "item deleted successfully", item: null });
+      }
     if (action === "increase") {
       cartItem.quantity += 1;
-    } else if (action === "decrease") {
+    } else if (action === "decrease"&&cartItem.quantity > 1 ) {
       cartItem.quantity -= 1;    
-     if (cartItem.quantity <1) {
-      const deleteItem = await Cart.findByIdAndDelete(req.params.id);
-      return res
-        .status(200)
-        .send({ message: "cart item deleted succcesfully", item: deleteItem });}
     }
-    else return res.status(400).send({ message: "Invalid action data" });
+    else return res.status(400).send({ message: "Invalid action data cant delete" });
     
     const updatedItem = await cartItem.save();
-    console.log(updatedItem)
     const populatedItem =await  updatedItem.populate(
       "productId",
       "name price image label"

@@ -1,9 +1,9 @@
 const productModel = require("../../modules/products/productModule");
 const joi = require("joi");
 const createProduct = async (req, res) => {
-  const { error:joierr } = joiProductValidator(req.body);
+  const { error: joierr } = joiProductValidator(req.body);
   if (joierr) {
-   return res
+    return res
       .status(400)
       .send({ message: "validation error", details: error.details[0].message });
   }
@@ -13,6 +13,7 @@ const createProduct = async (req, res) => {
       price: req.body.price,
       image: req.body.image,
       label: req.body.label,
+      healthy: req.body.healthy,
     });
     await product.save();
     res.status(201).send({ message: "product created", details: product });
@@ -33,9 +34,9 @@ const getAllProducts = async (req, res) => {
 };
 
 const getProductById = async (req, res) => {
-  const { error:joierr } = joiIdValidator(req.params.id);
+  const { error: joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
- 
+
   try {
     const product = await productModel.findById(req.params.id);
     if (!product) {
@@ -50,16 +51,14 @@ const getProductById = async (req, res) => {
 };
 
 const updateProductById = async (req, res) => {
-   const { error:joierr } = joiIdValidator(req.params.id);
+  const { error: joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
   const { err: bodyError } = joiProductValidator(req.body);
   if (bodyError) {
-    return res
-      .status(400)
-      .send({
-        message: "Validation error",
-        details: bodyError.details[0].message,
-      });
+    return res.status(400).send({
+      message: "Validation error",
+      details: bodyError.details[0].message,
+    });
   }
   try {
     const product = await productModel.findByIdAndUpdate(
@@ -69,6 +68,7 @@ const updateProductById = async (req, res) => {
         price: req.body.price,
         image: req.body.image,
         label: req.body.label,
+        healthy: req.body.healthy,
       },
       { new: true }
     );
@@ -84,8 +84,10 @@ const updateProductById = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-   const { error:joierr } = joiIdValidator(req.params.id);
+  const { error: joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
+
+
   try {
     const delProduct = await productModel.findByIdAndRemove(req.params.id);
     if (!delProduct) {
@@ -119,4 +121,10 @@ function joiIdValidator(id) {
   return schema.validate(id);
 }
 
-module.exports={createProduct,getAllProducts,getProductById,updateProductById,deleteProduct}
+module.exports = {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProductById,
+  deleteProduct,
+};

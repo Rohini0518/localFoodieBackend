@@ -8,10 +8,7 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 4000;
-app.use(cors({
-  origin: 'https://localfoodies.netlify.app', 
-  credentials: true
-}));
+app.use(cors());
 
 mongoose
   .connect(process.env.MONGODB_URL)
