@@ -60,7 +60,7 @@ const updateProductById = async (req, res) => {
       .status(400)
       .send({
         message: "Validation error",
-        details: joiErr.details[0].message,
+        details: joierr.details[0].message,
       });
   const { error: bodyError } = joiProductValidator(req.body);
   if (bodyError) {
@@ -88,15 +88,17 @@ const updateProductById = async (req, res) => {
       .status(200)
       .send({ message: "product is updated succesfully", details: product });
   } catch (error) {
-    res.status(500).send("product not found server error");
-  }
+res.status(500).send({
+      message: "Server error during update",
+      error: error.message,
+    });  }
 };
 
 const deleteProduct = async (req, res) => {
   const { error: joierr } = joiIdValidator(req.params.id);
   if (joierr) return res.status(400).send(joierr);
   try {
-    const delProduct = await productModel.findByIdAndRemove(req.params.id);
+    const delProduct = await productModel.findByIdAndDelete(req.params.id);
     if (!delProduct) {
       return res.status(404).send("id not found");
     }
@@ -106,7 +108,7 @@ const deleteProduct = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Server error during deletion ", error: error.message });
+      .send({ message: "Server error during deletion ", error: error.message });
   }
 };
 
