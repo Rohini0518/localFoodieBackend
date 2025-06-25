@@ -8,8 +8,12 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 4000;
-app.use(cors());
+app.use(cors({origin:"*"}));
 
+app.listen(port,()=>{
+  console.log("port is running in",port);
+  
+})
 mongoose
   .connect(process.env.MONGODB_URL)
   .then(() => {
@@ -25,5 +29,6 @@ app.get("/", (req, res) => {
 
 app.use("/products", productRouter);
 app.use("/cart", cartRouter);
+
 
 module.exports = app;

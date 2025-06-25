@@ -1,5 +1,6 @@
 const productModel = require("../../modules/products/productModule");
 const joi = require("joi");
+
 const createProduct = async (req, res) => {
   const { error: joierr } = joiProductValidator(req.body);
   if (joierr) {
@@ -29,10 +30,10 @@ const getAllProducts = async (req, res) => {
   try {
     const products = await productModel.find();
     res.status(200).send(products);
-  } catch (err) {
+  } catch (error) {
     res
       .status(400)
-      .send({ message: "failed to fetch data", details: err.message });
+      .send({ message: "failed to fetch data", error: error.message });
   }
 };
 
